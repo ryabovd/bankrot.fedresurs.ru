@@ -76,11 +76,11 @@ def check_debtors(debtors):
         prslastname, prsfirstname, prsmiddlename = debtor.lower().split()
         print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
         if get_old_response(prslastname, prsfirstname, prsmiddlename) != None:
-            prsn_name, prsn_inn = get_old_response(prslastname, prsfirstname, prsmiddlename)
-            print(prsn_name, type(prsn_name), prsn_inn, type(prsn_inn))
+            prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history = get_old_response(prslastname, prsfirstname, prsmiddlename)
+            #print(prsn_name, type(prsn_name), prsn_inn, type(prsn_inn))
             asleep = random.randint(2000, 5000) / 1000
             time.sleep(asleep)
-            get_response(prsn_name, prsn_inn)
+            get_response(prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history)
         else:
             pass
 
@@ -118,9 +118,70 @@ def get_old_response(prslastname='', prsfirstname='', prsmiddlename='', regionid
         person_old_link_end = get_person_old_link(soup)
         person_old_link = build_person_old_link(person_old_link_end)
         prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress = parse_person_data(prsn_data_list)
-        print('NAME & INN', prsn_name, prsn_inn)
+        #print('NAME & INN', prsn_name, prsn_inn)
         #prsn_fio, prsn_inn = get_debtor_fio_inn(person_old_link)
-        return prsn_name, prsn_inn
+        prsn_birthdate, prsn_birthplace, prsn_name_history = get_debtor_old_card(person_old_link)
+#########        
+        return prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history
+
+
+def get_debtor_old_card(person_old_link):
+    headers = {
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'accept-encoding': 'gzip, deflate, br, zstd',
+        'accept-language': 'ru-RU,ru;q=0.9,en-RU;q=0.8,en;q=0.7,en-US;q=0.6',
+        'cache-control': 'max-age=0',
+        'connection': 'keep-alive',
+        'cookie': '_ym_uid=1728029516311134247; _ym_d=1728029516; ASP.NET_SessionId=0bohgc1sylhu0kmbtchgkc11; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=1922547928&orgokpo=&OrgCategory=&prslastname=&prsfirstname=&prsmiddlename=&prsaddress=&prsregionid=&prsinn=&prsogrn=&prssnils=19225479288&PrsCategory=&pagenumber=0; _ym_isad=2; bankrotcookie=c98aae444770b29b2e0d2443407caf61; _ym_visorc=b; qrator_msid=1729866689.333.Ji8tvRKDjgadFiNb-ablknlgh28g2kh3rnbq6ifakmlou2kob',
+        'host': 'old.bankrot.fedresurs.ru',
+        'sec-ch-ua': '"Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'none',
+        'sec-fetch-user': '?1',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+    }
+    response = requests.get(person_old_link, headers=headers)
+    web_card = response.text
+    #print(web_card)
+    soup = BeautifulSoup(web_card, 'html.parser')
+#    prsn_lastName = soup.find('span', id = 'ctl00_cphBody_lblLastName').text
+#    print('prsn_lastName', prsn_lastName)
+#    prsn_firstName = soup.find('span', id = 'ctl00_cphBody_lblFirstName').text
+#    print('prsn_firstName', prsn_firstName)
+#    prsn_middleName = soup.find('span', id = 'ctl00_cphBody_lblMiddleName').text
+#    print('prsn_middleName', prsn_middleName)
+    prsn_birthdate = soup.find('span', id = 'ctl00_cphBody_lblBirthdate').text
+#    print('prsn_birthdate', prsn_birthdate)
+    prsn_birthplace = soup.find('span', id = 'ctl00_cphBody_lblBirthplace').text
+#    print('prsn_birthplace', prsn_birthplace)
+#    prsn_caseRegion =  soup.find('span', id = 'ctl00_cphBody_lblRegion').text
+#    print('prsn_caseRegion', prsn_caseRegion)
+#    prsn_inn = soup.find('span', id = 'ctl00_cphBody_lblINN').text
+#    print('prsn_inn', prsn_inn)
+#    prsn_snils = soup.find('span', id = 'ctl00_cphBody_lblSNILS').text
+#    print('prsn_snils', prsn_snils)
+#    prsn_address = soup.find('span', id = 'ctl00_cphBody_lblAddress').text
+#    print('prsn_address', prsn_address)
+#    prsn_fio = get_fio(prsn_lastName, prsn_firstName, prsn_middleName)
+#    print('fio', prsn_fio)
+    prsn_name_history = soup.find('span', id = 'ctl00_cphBody_lblNameHistory').text
+#    out_card = prsn_fio, person_old_link, prsn_inn, prsn_snils, prsn_address, prsn_birthdate, prsn_birthplace
+#    print('prsn_birthdate', prsn_birthdate)
+#    print('prsn_birthplace', prsn_birthplace)
+#    print('prsn_name_history', prsn_name_history)
+    return(prsn_birthdate, prsn_birthplace, prsn_name_history)
+
+
+def fill_out_card(prsn_birthdate, prsn_birthplace, prsn_name_history):
+    print('FILL', prsn_birthdate, prsn_birthplace, prsn_name_history)
+    data['birthdate'].append(prsn_birthdate)
+    data['birthplace'].append(prsn_birthplace)
+    data['name_history'].append(prsn_name_history)
+    #print('fill', data)
 
 
 def get_session():
@@ -173,62 +234,6 @@ def get_debtor_fio_inn(person_old_link):
     return(prsn_fio, prsn_inn)
 
 
-def get_debtor_old_card(person_old_link):
-    headers = {
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'accept-encoding': 'gzip, deflate, br, zstd',
-        'accept-language': 'ru-RU,ru;q=0.9,en-RU;q=0.8,en;q=0.7,en-US;q=0.6',
-        'cache-control': 'max-age=0',
-        'connection': 'keep-alive',
-        'cookie': '_ym_uid=1728029516311134247; _ym_d=1728029516; ASP.NET_SessionId=0bohgc1sylhu0kmbtchgkc11; debtorsearch=typeofsearch=Persons&orgname=&orgaddress=&orgregionid=&orgogrn=&orginn=1922547928&orgokpo=&OrgCategory=&prslastname=&prsfirstname=&prsmiddlename=&prsaddress=&prsregionid=&prsinn=&prsogrn=&prssnils=19225479288&PrsCategory=&pagenumber=0; _ym_isad=2; bankrotcookie=c98aae444770b29b2e0d2443407caf61; _ym_visorc=b; qrator_msid=1729866689.333.Ji8tvRKDjgadFiNb-ablknlgh28g2kh3rnbq6ifakmlou2kob',
-        'host': 'old.bankrot.fedresurs.ru',
-        'sec-ch-ua': '"Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'document',
-        'sec-fetch-mode': 'navigate',
-        'sec-fetch-site': 'none',
-        'sec-fetch-user': '?1',
-        'upgrade-insecure-requests': '1',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
-    }
-    response = requests.get(person_old_link, headers=headers)
-    web_card = response.text
-    #print(web_card)
-    soup = BeautifulSoup(web_card, 'html.parser')
-    prsn_lastName = soup.find('span', id = 'ctl00_cphBody_lblLastName').text
-#    print('prsn_lastName', prsn_lastName)
-    prsn_firstName = soup.find('span', id = 'ctl00_cphBody_lblFirstName').text
-#    print('prsn_firstName', prsn_firstName)
-    prsn_middleName = soup.find('span', id = 'ctl00_cphBody_lblMiddleName').text
-#    print('prsn_middleName', prsn_middleName)
-    prsn_birthdate = soup.find('span', id = 'ctl00_cphBody_lblBirthdate').text
-#    print('prsn_birthdate', prsn_birthdate)
-    prsn_birthplace = soup.find('span', id = 'ctl00_cphBody_lblBirthplace').text
-#    print('prsn_birthplace', prsn_birthplace)
-    prsn_caseRegion =  soup.find('span', id = 'ctl00_cphBody_lblRegion').text
-#    print('prsn_caseRegion', prsn_caseRegion)
-    prsn_inn = soup.find('span', id = 'ctl00_cphBody_lblINN').text
-#    print('prsn_inn', prsn_inn)
-    prsn_snils = soup.find('span', id = 'ctl00_cphBody_lblSNILS').text
-#    print('prsn_snils', prsn_snils)
-    prsn_address = soup.find('span', id = 'ctl00_cphBody_lblAddress').text
-#    print('prsn_address', prsn_address)
-    prsn_fio = get_fio(prsn_lastName, prsn_firstName, prsn_middleName)
-#    print('fio', prsn_fio)
-    out_card = prsn_fio, person_old_link, prsn_inn, prsn_snils, prsn_address
-    fill_out_card(prsn_fio, person_old_link, prsn_inn, prsn_snils, prsn_address)
-
-
-def fill_out_card(prsn_fio, person_old_link, prsn_inn, prsn_snils, prsn_address):
-    data['name'].append(prsn_fio)
-    data['snils'].append(prsn_snils)
-    data['inn'].append(prsn_inn)
-    data['address'].append(prsn_address)
-    data['link_old_fedresurs'].append(person_old_link)
-    #print('fill', data)
-
-
 def get_person_old_link(soup):
     link = soup.find('table', class_ = 'bank').find('a')
     person_link = link.get(('href'))
@@ -254,10 +259,13 @@ data = {'name': [],
 #        'link_kad': [],
         'inn': [],
         'snils': [],
-        'address': []}
+        'address': [],
+        'birthdate': [],
+        'birthplace': [],
+        'name_history': []}
 
 
-def get_response(prsn_name, prsn_inn):
+def get_response(prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history):
     url = build_url(prsn_inn)
     headers = {
         "Accept": "application/json, text/plain, */*",
@@ -277,26 +285,27 @@ def get_response(prsn_name, prsn_inn):
     response.encoding = 'utf-8'
     string = response.text
     res_dict = json.loads(string)
-    print('res_dict', res_dict) # Печатаем полученный словарь
-    print('total', res_dict['total'])
+    #print('res_dict', res_dict) # Печатаем полученный словарь
+    #print('total', res_dict['total'])
     if res_dict['total'] > 0:
-        print('ЗАШЁЛ')
+        #print('ЗАШЁЛ')
         print(red_text + str(prsn_name) + end_text)
         for dict in res_dict['pageData']:
-            print('словарь из пэйдждата', dict)
+            #print('словарь из пэйдждата', dict)
             data['name'].append(prsn_name)
             if 'snils' in dict:
-                print('snils', dict['snils'])
+                #print('snils', dict['snils'])
                 data['snils'].append(dict['snils'])
             else:
-                print('snils', '0')
+                #print('snils', '0')
                 data['snils'].append('0')
-            print('inn', dict['inn'])
+            #print('inn', dict['inn'])
             data['inn'].append(dict['inn'])
             data['case'].append(dict['lastLegalCase']['number'])
             data['procedure'].append(dict['lastLegalCase']['status']['description'])
             data['address'].append(dict['address'])
             data['link_fedresurs'].append('https://fedresurs.ru/persons/' + dict['guid'] + ' ')
+            fill_out_card(prsn_birthdate, prsn_birthplace, prsn_name_history)
             print('DATA', data)
 
 
