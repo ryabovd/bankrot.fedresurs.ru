@@ -77,7 +77,7 @@ def check_debtors(debtors):
         asleep = random.randint(2000, 6000) / 1000
 #        print('sleep', asleep)
         time.sleep(asleep)
-        pass
+#        pass
 
 
 def check_person(id):
@@ -168,6 +168,7 @@ def main():
         print(red_text + 'Найдено ' + str(len(data['name'])) + ' записей' + end_text + "\n")
     else:
         print(green_text + 'Найдено ' + str(len(data['name'])) + ' записей' + end_text + "\n")
+#    print(data)
     df = pd.DataFrame(data)
     df.to_excel(filename, index=False)
     print(red_text + "Файл данных ЗАПИСАН" + end_text + "\n")
