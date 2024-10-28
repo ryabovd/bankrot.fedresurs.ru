@@ -40,7 +40,7 @@ def build_url(prsnbankruptsId, regionId='95'):
 
     end_url = "&limit=15&offset=0"
     encoding_prsnbankruptsId = start_url + prsnbankruptsId + middle_url + end_url
-    print(start_url + prsnbankruptsId + middle_url + end_url)
+#    print(start_url + prsnbankruptsId + middle_url + end_url)
     return start_url + prsnbankruptsId + middle_url + end_url
 
 
@@ -73,16 +73,20 @@ def get_debtors():
 
 def check_debtors(debtors):
     for debtor in debtors:
-        prslastname, prsfirstname, prsmiddlename = debtor.lower().split()
-        print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
-        if get_old_response(prslastname, prsfirstname, prsmiddlename) != None:
-            prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history = get_old_response(prslastname, prsfirstname, prsmiddlename)
-            #print(prsn_name, type(prsn_name), prsn_inn, type(prsn_inn))
-            asleep = random.randint(2000, 5000) / 1000
-            time.sleep(asleep)
-            get_response(prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history)
+        if len(debtor.split()) == 3:
+            prslastname, prsfirstname, prsmiddlename = debtor.lower().split()
+            print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
+            if get_old_response(prslastname, prsfirstname, prsmiddlename) != None:
+                prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history = get_old_response(prslastname, prsfirstname, prsmiddlename)
+                #print(prsn_name, type(prsn_name), prsn_inn, type(prsn_inn))
+                get_response(prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history)
+            else:
+                pass
         else:
-            pass
+            print(red_text + 'ПРОПУСК' + end_text)
+            print(red_text + str(debtor.upper()) + end_text)
+        asleep = random.randint(500, 1500) / 1000
+        time.sleep(asleep)
 
 
 def get_old_response(prslastname='', prsfirstname='', prsmiddlename='', regionid = '95'):
@@ -177,7 +181,7 @@ def get_debtor_old_card(person_old_link):
 
 
 def fill_out_card(prsn_birthdate, prsn_birthplace, prsn_name_history):
-    print('FILL', prsn_birthdate, prsn_birthplace, prsn_name_history)
+    #print('FILL', prsn_birthdate, prsn_birthplace, prsn_name_history)
     data['birthdate'].append(prsn_birthdate)
     data['birthplace'].append(prsn_birthplace)
     data['name_history'].append(prsn_name_history)
@@ -301,12 +305,22 @@ def get_response(prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name
                 data['snils'].append('0')
             #print('inn', dict['inn'])
             data['inn'].append(dict['inn'])
-            data['case'].append(dict['lastLegalCase']['number'])
-            data['procedure'].append(dict['lastLegalCase']['status']['description'])
+            if 'lastLegalCase' in dict:
+                if 'number' in dict['lastLegalCase']:
+# правильно определить словарь для номера дела                
+                    data['case'].append(dict['lastLegalCase']['number'])
+            else:
+                data['case'].append('н/д')
+            if 'lastLegalCase' in dict:
+                if 'description' in dict['lastLegalCase']['status']:
+# Правильно определить словарь для процедуры
+                    data['procedure'].append(dict['lastLegalCase']['status']['description'])
+            else:
+                data['procedure'].append('н/д')
             data['address'].append(dict['address'])
             data['link_fedresurs'].append('https://fedresurs.ru/persons/' + dict['guid'] + ' ')
             fill_out_card(prsn_birthdate, prsn_birthplace, prsn_name_history)
-            print('DATA', data)
+            #print('DATA', data)
 
 
 def start_time():
@@ -445,4 +459,6 @@ func for make main report
 Перед проверкой спрашивать пользователя какой файл проверять.
 
 После запуска находить файл с минимальной датой редактирования.
+
+Отрабатывать внесудебное банкротство: без номера дела, без процедуры, без АУ
 """
