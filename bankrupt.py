@@ -71,6 +71,11 @@ def check_debtors(debtors):
         if len(debtor.split()) == 3:
             prslastname, prsfirstname, prsmiddlename = debtor.lower().split()
             print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
+#            print(debtor)
+            if debtor == 'Корякин Виктор Михайлович':
+#                print(get_old_response(prslastname, prsfirstname, prsmiddlename))
+                pass
+                
             if get_old_response(prslastname, prsfirstname, prsmiddlename) != None:
                 prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history = get_old_response(prslastname, prsfirstname, prsmiddlename)
                 get_response(prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history)
@@ -111,8 +116,24 @@ def get_old_response(prslastname='', prsfirstname='', prsmiddlename='', regionid
     soup = BeautifulSoup(text, 'html.parser')
     bank = soup.find('table', class_ = 'bank').find('tr').find_next_siblings('tr')
     for el in bank:
-        prsn_data_list_dirty = str(el.get_text()).replace('\t', '').replace('Физическое лицо', '').split('\r\n')
+        prsn_data_list_dirty = str(el.get_text()).replace('\t', '').split('\r\n')
+#        print(prsn_data_list_dirty)
+        if 'Физическое лицо' in prsn_data_list_dirty:
+            prsn_data_list_dirty = str(el.get_text()).replace('\t', '').replace('Физическое лицо', '').split('\r\n')
+#            print(len(prsn_data_list_dirty))
+        elif 'Индивидуальный предприниматель' in prsn_data_list_dirty:
+#            print(len(prsn_data_list_dirty)) 
+            prsn_data_list_dirty = str(el.get_text()).replace('\t', '').replace('Индивидуальный предприниматель', '').split('\r\n')
+            ogrnip = prsn_data_list_dirty.pop(7)
+            del prsn_data_list_dirty[6]
+#            print(len(prsn_data_list_dirty[6]))
+            if len(prsn_data_list_dirty[6]) < 11:
+                prsn_data_list_dirty[6] = '(н/д)'
+#            print(len(prsn_data_list_dirty))                
+#        print(prsn_data_list_dirty)
+#        print(len(prsn_data_list_dirty))
         prsn_data_list = clean_prsn_data(prsn_data_list_dirty)
+#        print(prsn_data_list)
         person_old_link_end = get_person_old_link(soup)
         person_old_link = build_person_old_link(person_old_link_end)
         prsn_name, prsn_inn, prsn_snils, prsn_region, prsn_adress = parse_person_data(prsn_data_list)
