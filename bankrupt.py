@@ -71,11 +71,6 @@ def check_debtors(debtors):
         if len(debtor.split()) == 3:
             prslastname, prsfirstname, prsmiddlename = debtor.lower().split()
             print(f'Проверка {debtors.index(debtor) + 1} из {len(debtors)} - {(debtors.index(debtor) + 1) * 100 // len(debtors)}% завершено')
-#            print(debtor)
-            if debtor == 'Корякин Виктор Михайлович':
-#                print(get_old_response(prslastname, prsfirstname, prsmiddlename))
-                pass
-                
             if get_old_response(prslastname, prsfirstname, prsmiddlename) != None:
                 prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history = get_old_response(prslastname, prsfirstname, prsmiddlename)
                 get_response(prsn_name, prsn_inn, prsn_birthdate, prsn_birthplace, prsn_name_history)
